@@ -3,197 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kawnain Shoes - Premium Footwear</title>
+    <title>Kawnain Shoes | Premium Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        :root { --primary: #2c3e50; --accent: #e74c3c; --light: #f4f4f4; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--light); }
-        header { background: var(--primary); color: white; padding: 1rem; text-align: center; position: sticky; top: 0; z-index: 100; }
+        :root { --primary: #1a1a1a; --accent: #ff4757; --success: #2ed573; --bg: #f1f2f6; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: var(--bg); color: #2f3542; }
         
-        /* Layout */
-        .container { max-width: 1100px; margin: 20px auto; padding: 20px; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        
-        /* Cards */
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 5px; }
-        .price { color: var(--accent); font-size: 1.5rem; font-weight: bold; margin: 10px 0; }
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: 100%; }
-        
+        /* Header */
+        header { background: #fff; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: 600; color: var(--primary); cursor: pointer; }
+        .logo span { color: var(--accent); }
+        .admin-btn { border: 2px solid var(--primary); background: transparent; padding: 8px 18px; border-radius: 25px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .admin-btn:hover { background: var(--primary); color: #fff; }
+
+        /* Products Grid */
+        .container { padding: 40px 5%; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .card { background: #fff; border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.3s; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .card img { width: 100%; border-radius: 15px; height: 220px; object-fit: cover; }
+        .card h3 { margin: 15px 0 5px; font-size: 1.2rem; }
+        .price { font-size: 1.5rem; font-weight: 600; color: var(--success); margin-bottom: 15px; }
+        .buy-now { background: var(--primary); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .buy-now:hover { background: var(--accent); }
+
         /* Modals */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; }
-        .modal-content { background: white; width: 90%; max-width: 400px; margin: 10% auto; padding: 25px; border-radius: 10px; position: relative; }
-        .close { position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 20px; }
-        
-        /* Admin Panel */
-        #admin-panel { display: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #2c3e50; color: white; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 2000; width: 90%; max-width: 450px; display: none; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; display: none; backdrop-filter: blur(5px); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
+
+        /* Admin Dashboard */
+        #adminPanel { padding: 40px 5%; background: #fff; min-height: 100vh; display: none; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: var(--primary); color: #fff; }
+        .export-btns { margin-bottom: 20px; display: flex; gap: 10px; }
+        .btn-pdf { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .btn-excel { background: #2ed573; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>KAWNAIN SHOES</h1>
-    <p>Premium Quality Below ₹399</p>
-    <button onclick="showAdminLogin()" style="float: right; margin-top: -40px; background: none; border: 1px solid white; color: white; cursor: pointer; padding: 5px 10px;">Admin Login</button>
+    <div class="logo" onclick="location.reload()">KAWNAIN<span>.SHOES</span></div>
+    <button class="admin-btn" onclick="toggleModal('loginModal', true)">Admin Login</button>
 </header>
 
-<div class="container" id="main-store">
-    <div class="product-grid">
+<div id="storeView">
+    <div class="container">
         <div class="card">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Red Sneaker">
-            <h3>Sporty Red Edition</h3>
-            <p class="price">₹349</p>
-            <button class="btn" onclick="openCheckout('Sporty Red Edition', 349)">Buy Now</button>
-        </div>
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30" alt="Casual Shoe">
-            <h3>Classic White Casual</h3>
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Red Nike">
+            <h3>Red Sport Edition</h3>
             <p class="price">₹399</p>
-            <button class="btn" onclick="openCheckout('Classic White Casual', 399)">Buy Now</button>
+            <button class="buy-now" onclick="openOrder('Red Sport Edition', 399)">Order Now</button>
         </div>
         <div class="card">
-            <img src="https://images.unsplash.com/photo-1491553895911-0055eca6402d" alt="Black Running">
-            <h3>Midnight Runner</h3>
-            <p class="price">₹299</p>
-            <button class="btn" onclick="openCheckout('Midnight Runner', 299)">Buy Now</button>
+            <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa" alt="Green Shoe">
+            <h3>Volt Green Sneakers</h3>
+            <p class="price">₹349</p>
+            <button class="buy-now" onclick="openOrder('Volt Green Sneakers', 349)">Order Now</button>
+        </div>
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30" alt="Casual">
+            <h3>Casual White Walker</h3>
+            <p class="price">₹380</p>
+            <button class="buy-now" onclick="openOrder('Casual White Walker', 380)">Order Now</button>
         </div>
     </div>
 </div>
 
-<div id="checkoutModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('checkoutModal')">&times;</span>
-        <h2>Checkout</h2>
-        <p id="item-details"></p>
-        <hr>
-        <input type="text" id="custName" placeholder="Your Name" style="width:94%; padding:10px; margin: 10px 0;"><br>
-        <input type="text" id="custAddress" placeholder="Full Address" style="width:94%; padding:10px; margin: 10px 0;"><br>
-        
-        <h4>Select Payment Method:</h4>
-        <label><input type="radio" name="payMethod" value="UPI" checked> UPI (6006049563@ybl)</label><br>
-        <label><input type="radio" name="payMethod" value="COD"> Cash on Delivery</label><br><br>
-        
-        <button id="submitBtn" class="btn" style="background: #27ae60;" onclick="placeOrder()">Confirm Order</button>
-    </div>
+<div id="orderModal" class="modal">
+    <h3 id="modalTitle" style="margin-top:0">Order Details</h3>
+    <p id="prodInfo" style="color:#666; font-weight:600"></p>
+    <input type="text" id="custName" placeholder="Full Name">
+    <input type="text" id="custPhone" placeholder="Mobile Number">
+    <input type="text" id="custAddress" placeholder="Delivery Address">
+    <select id="payMethod">
+        <option value="Cash on Delivery">Cash on Delivery (COD)</option>
+    </select>
+    <button class="buy-now" onclick="submitOrder()" style="background:var(--success)">Confirm Order</button>
+    <button onclick="toggleModal('orderModal', false)" style="background:none; border:none; color:red; margin-top:10px; cursor:pointer; width:100%">Cancel</button>
 </div>
 
-<div id="adminLoginModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('adminLoginModal')">&times;</span>
-        <h2>Admin Login</h2>
-        <input type="text" id="adminUser" placeholder="Admin Name" style="width:94%; padding:10px; margin: 10px 0;">
-        <input type="password" id="adminPass" placeholder="Password" style="width:94%; padding:10px; margin: 10px 0;">
-        <button class="btn" onclick="handleLogin()">Login</button>
-    </div>
+<div id="loginModal" class="modal">
+    <h3>Admin Security</h3>
+    <input type="text" id="user" placeholder="Admin Username">
+    <input type="password" id="pass" placeholder="Password">
+    <button class="buy-now" onclick="checkAdmin()">Login</button>
+    <button onclick="toggleModal('loginModal', false)" style="background:none; border:none; color:red; margin-top:10px; cursor:pointer; width:100%">Close</button>
 </div>
 
-<div class="container" id="admin-panel">
-    <button onclick="location.reload()" style="background: red; color:white; border:none; padding:5px 10px; cursor:pointer;">Logout</button>
-    <h2>Welcome Kawnain! Order Management</h2>
-    <p>(Note: Naye orders sheet mein save ho rahe hain)</p>
-    <table id="orderTable">
+<div id="adminPanel">
+    <div class="dashboard-header">
+        <h2>Order List (Admin: Kawnain)</h2>
+        <button class="admin-btn" onclick="location.reload()">Logout</button>
+    </div>
+    <div class="export-btns">
+        <button class="btn-pdf" onclick="exportPDF()">Download PDF</button>
+        <button class="btn-excel" onclick="exportExcel()">Download Google Sheet</button>
+    </div>
+    <table>
         <thead>
             <tr>
                 <th>Customer</th>
+                <th>Phone</th>
                 <th>Product</th>
-                <th>Price</th>
-                <th>Method</th>
                 <th>Address</th>
+                <th>Amount</th>
             </tr>
         </thead>
-        <tbody id="orderBody"></tbody>
+        <tbody id="orderTableBody"></tbody>
     </table>
 </div>
 
+<div id="overlay" class="overlay" onclick="closeAll()"></div>
+
 <script>
-    // --- API CONFIGURATION ---
-    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycby0DArLsLkXQA-IWz97ATIiaF1zxaFxkomrpZFXP0Y_xaUibsmx7zvxXSTtc9ZV09wSNA/exec';
+    let selectedShoe = "";
+    let selectedPrice = 0;
 
-    let orders = JSON.parse(localStorage.getItem('orders')) || [];
-    let currentItem = {};
-
-    function openCheckout(name, price) {
-        currentItem = { name, price };
-        document.getElementById('item-details').innerText = `Buying: ${name} - ₹${price}`;
-        document.getElementById('checkoutModal').style.display = 'block';
+    function toggleModal(id, show) {
+        document.getElementById(id).style.display = show ? 'block' : 'none';
+        document.getElementById('overlay').style.display = show ? 'block' : 'none';
     }
 
-    async function placeOrder() {
+    function closeAll() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function openOrder(name, price) {
+        selectedShoe = name;
+        selectedPrice = price;
+        document.getElementById('prodInfo').innerText = `${name} - ₹${price}`;
+        toggleModal('orderModal', true);
+    }
+
+    // --- Order Logic ---
+    function submitOrder() {
         const name = document.getElementById('custName').value;
+        const phone = document.getElementById('custPhone').value;
         const addr = document.getElementById('custAddress').value;
-        const method = document.querySelector('input[name="payMethod"]:checked').value;
-        const btn = document.getElementById('submitBtn');
 
-        if(!name || !addr) return alert("Please fill details");
-
-        // UI Update: Order process ho raha hai
-        btn.innerText = "Processing...";
-        btn.disabled = true;
-
-        const orderData = {
-            name: name,
-            product: currentItem.name,
-            price: currentItem.price,
-            method: method,
-            addr: addr
-        };
-
-        try {
-            // API CALL: Data Google Sheet mein bhej rahe hain
-            await fetch(GOOGLE_SHEET_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-
-            // Local storage backup
-            orders.push(orderData);
-            localStorage.setItem('orders', JSON.stringify(orders));
-
-            if(method === 'UPI') {
-                alert("Order Data Saved! Please pay ₹" + currentItem.price + " to 6006049563@ybl to confirm.");
-            } else {
-                alert("Order Placed Successfully! Data sent to Google Sheet.");
-            }
-
-        } catch (error) {
-            console.error("Error!", error);
-            alert("Something went wrong, but order saved locally.");
-        } finally {
-            btn.innerText = "Confirm Order";
-            btn.disabled = false;
-            closeModal('checkoutModal');
+        if(!name || !phone || !addr) {
+            Swal.fire('Error', 'Please fill all details!', 'error');
+            return;
         }
+
+        const newOrder = { name, phone, shoe: selectedShoe, price: selectedPrice, address: addr };
+        
+        // Save to LocalStorage
+        let orders = JSON.parse(localStorage.getItem('kawnainOrders') || "[]");
+        orders.push(newOrder);
+        localStorage.setItem('kawnainOrders', JSON.stringify(orders));
+
+        // Show Success Alert
+        Swal.fire({
+            title: 'Order Placed!',
+            text: 'Your order for ' + selectedShoe + ' has been received.',
+            icon: 'success',
+            confirmButtonText: 'Great!'
+        });
+
+        closeAll();
+        // Clear inputs
+        document.getElementById('custName').value = "";
+        document.getElementById('custPhone').value = "";
+        document.getElementById('custAddress').value = "";
     }
 
-    function showAdminLogin() { document.getElementById('adminLoginModal').style.display = 'block'; }
-
-    function handleLogin() {
-        const user = document.getElementById('adminUser').value;
-        const pass = document.getElementById('adminPass').value;
-
-        if(user === "kawnain" && pass === "kawnain737@#") {
-            document.getElementById('main-store').style.display = 'none';
-            document.getElementById('adminLoginModal').style.display = 'none';
-            document.getElementById('admin-panel').style.display = 'block';
-            loadOrders();
+    // --- Admin Logic ---
+    function checkAdmin() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        if(u === "kawnain" && p === "kawnain737@#") {
+            document.getElementById('storeView').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            closeAll();
+            renderOrders();
         } else {
-            alert("Galat Details!");
+            Swal.fire('Access Denied', 'Wrong Username or Password!', 'error');
         }
     }
 
-    function loadOrders() {
-        const tbody = document.getElementById('orderBody');
-        tbody.innerHTML = '';
-        orders.forEach(o => {
-            tbody.innerHTML += `<tr><td>${o.name}</td><td>${o.product}</td><td>₹${o.price}</td><td>${o.method}</td><td>${o.addr}</td></tr>`;
+    function renderOrders() {
+        const orders = JSON.parse(localStorage.getItem('kawnainOrders') || "[]");
+        const tbody = document.getElementById('orderTableBody');
+        tbody.innerHTML = "";
+        orders.reverse().forEach(o => {
+            tbody.innerHTML += `<tr>
+                <td>${o.name}</td>
+                <td>${o.phone}</td>
+                <td>${o.shoe}</td>
+                <td>${o.address}</td>
+                <td>₹${o.price}</td>
+            </tr>`;
         });
     }
 
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    // --- Export Functions ---
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Kawnain Shoes - Customer Orders", 14, 20);
+        doc.setFontSize(12);
+        let y = 35;
+        const orders = JSON.parse(localStorage.getItem('kawnainOrders') || "[]");
+        orders.forEach((o, i) => {
+            doc.text(`${i+1}. ${o.name} (${o.phone}) - ${o.shoe} - ₹${o.price}`, 14, y);
+            y += 10;
+        });
+        doc.save("Kawnain_Orders.pdf");
+    }
+
+    function exportExcel() {
+        const orders = JSON.parse(localStorage.getItem('kawnainOrders') || "[]");
+        const ws = XLSX.utils.json_to_sheet(orders);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Orders");
+        XLSX.writeFile(wb, "Kawnain_Shoes_Orders.xlsx");
+    }
 </script>
 
 </body>
